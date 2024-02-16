@@ -1,0 +1,12 @@
+#
+
+**/.DS_Store
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+baseline-output-task1-random.txt
+baseline-output-task2.txt
+task1/task1B-TWT_dev_output.txt
+task2/task2A.txt
+task2/task2B.txt
