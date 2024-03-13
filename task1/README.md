@@ -79,7 +79,7 @@ pip install -r requirements.txt
 ```
 Launch the scorer as follows:
 ```
-python scorer/task_1.py --gold-file-path=<path_gold_file> --pred-file-path=<predictions_file> --techniques_file_path ./techniques_list_task1.txt
+python scorer/task1.py --gold-file-path=<path_gold_file> --pred-file-path=<predictions_file> --techniques_file_path ./techniques_list_task1.txt
 ```
 
 ##### Example
