@@ -134,7 +134,7 @@ python scorer/task1.py --predicted_file task1_dev_output.jsonl --gold_file data/
 ```
 
 ### Official Evaluation Metrics
-The **official evaluation metric** for the task is **macro-F1**. However, the scorer also reports micro-F1, Precision, and Recall.
+The **official evaluation metric** for the task is **modified micro-F1**. However, the scorer also reports macro-F1, Precision, and Recall.
 
 
 ## Baselines
@@ -145,7 +145,7 @@ The same script can be used for both subtasks.
 python baselines/task1.py --dev_file_path data/araieval24_task1_dev.jsonl --output_file_path task1_random_baseline.jsonl
  ```
 
-If you submit the predictions of the baseline on the development set to the shared task website, you would get a macro-F1 score of 0.0228.
+If you submit the predictions of the baseline on the development set to the shared task website, you would get a modfied micro-F1 score of 0.0260.
 
 
 ## Format checker
@@ -188,7 +188,7 @@ For each phase, please adhere to the following guidelines:
 - You are permitted to submit a maximum of 200 submissions per day for each subtask.
 
 ### Submission Site
-Please submit your results on the respective subtask tab: https://codalab.lisn.upsaclay.fr/competitions/18110
+Please submit your results on the respective subtask tab: https://codalab.lisn.upsaclay.fr/competitions/18111
 
 ## Licensing
 The dataset is free for general research use.
