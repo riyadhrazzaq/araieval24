@@ -3,78 +3,74 @@ import random
 import argparse
 import warnings
 import sys
+import logging
+from collections import defaultdict
+import json
 
 sys.path.append('.')
-from scorer.task1 import evaluate
+from scorer.task1 import FLC_score_to_string
 
-random.seed(42)  # to make runs deterministic
+random.seed(0)  # to make runs deterministic
 
+logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.INFO)
 
-def random_baseline_1B(persuasion_techniques_file, dev_file, out_fname, subtask):
+propaganda_techniques = ['Appeal_to_Values', 'Loaded_Language', 'Consequential_Oversimplification',
+                         'Causal_Oversimplification', 'Questioning_the_Reputation', 'Straw_Man', 'Repetition',
+                         'Guilt_by_Association', 'Appeal_to_Hypocrisy', 'Conversation_Killer',
+                         'False_Dilemma-No_Choice', 'Whataboutism', 'Slogans',
+                         'Obfuscation-Vagueness-Confusion',
+                         'Name_Calling-Labeling', 'Flag_Waving', 'Doubt',
+                         'Appeal_to_Fear-Prejudice', 'Exaggeration-Minimisation', 'Red_Herring',
+                         'Appeal_to_Popularity', 'Appeal_to_Authority', 'Appeal_to_Time']
+
+def random_baseline(dev_file, out_fname):
     gold_labels = {}
     pred_labels = {}
 
-    with open(persuasion_techniques_file, "r") as f:
-        techniques = [line.strip() for line in f.readlines()]
-
     out_f = open(out_fname, 'w', encoding="utf-8")
-    out_f.write("id\tlabels\n")
 
     with jsonlines.open(dev_file) as gold_f:
         for obj in gold_f:
             doc_id = str(obj["id"])
-            gold_labels[doc_id] = obj["labels"]
+            per_par_labels = []
+
+            for label in obj["labels"]:
+                start = label['start']
+                end = label['end']
+                per_par_labels.append((label['technique'], [start, end]))
+
+            per_par_labels = sorted(per_par_labels, key=lambda span: span[1][0])
+            gold_labels[doc_id] = per_par_labels
 
             techniques_list = []
 
-            # Most docs in dev ad train set has max of 5 labels/document
-            rand_no_labels = random.randint(1, 5)
+
+            # Most docs in dev and train set has max of 4 labels/document
+            rand_no_labels = random.randint(1, 4)
 
             while len(techniques_list) < rand_no_labels:
-                random_technique = techniques[random.randint(0, len(techniques) - 1)]
+                random_technique = propaganda_techniques[random.randint(0, len(propaganda_techniques) - 1)]
                 if random_technique not in techniques_list:
-                    techniques_list.append(random_technique)
+                    start = random.randint(0, len(obj['text']))
+                    end = random.randint(0, len(obj['text']))
+                    pos = [start, end]
+                    pos.sort()
+                    techniques_list.append((random_technique, tuple(pos)))
 
             techniques_list = set(techniques_list)
 
-            if "no_technique" in techniques_list and len(techniques_list) > 1:
-                techniques_list.remove("no_technique")
-
             pred_labels[doc_id] = techniques_list
 
-            out_f.write(doc_id + "\t" + ",".join(techniques_list) + "\n")
+            wlabels = []
+            for item in techniques_list:
+                wlabels.append({'technique': item[0], 'start': item[1][0], 'end': item[1][1], "text": obj['text'][item[1][0]:item[1][1]]})
 
-        micro_f1, macro_f1 = evaluate(pred_labels, gold_labels, subtask, techniques)
+            out_f.write(json.dumps({'id': doc_id, 'labels': wlabels}, ensure_ascii=False) + "\n")
 
-        out_f.close()
-        print("micro-F1={:.4f}\tmacro-F1={:.4f}".format(micro_f1, macro_f1))
-
-
-def random_baseline_1A(dev_file, out_fname, subtask):
-    gold_labels = {}
-    pred_labels = {}
-
-    out_f = open(out_fname, 'w', encoding="utf-8")
-    out_f.write("id\tlabel\n")
-
-    with jsonlines.open(dev_file) as gold_f:
-        for obj in gold_f:
-            doc_id = str(obj["id"])
-            gold_labels[doc_id] = obj["label"]
-
-            labels_list = ["true", "false"]
-
-            preds = random.choice(labels_list)
-            pred_labels[doc_id] = preds
-
-
-            out_f.write(doc_id + "\t" + preds + "\n")
-
-        print(gold_labels)
-        micro_f1, macro_f1 = evaluate(pred_labels, gold_labels, subtask)
+        res_for_screen = FLC_score_to_string(gold_labels, pred_labels, False)
 
         out_f.close()
-        print("micro-F1={:.4f}\tmacro-F1={:.4f}".format(micro_f1, macro_f1))
+        print(res_for_screen)
 
 
 if __name__ == "__main__":
@@ -82,19 +78,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dev_file_path", "-g", required=True,
                         help="The absolute path to the dev file.", type=str)
-    parser.add_argument("--techniques_file_path", "-c", required=False,
-                        help="In case of subtask 1B, the absolute path to the file containing all "
-                             "possible persuasion techniques", type=str)
     parser.add_argument("--output_file_path", "-o", required=True,
                         help="Path to output file to save run.", type=str)
-    parser.add_argument("--subtask", "-s", required=True, choices=['1A', '1B'],
-                        help="The subtask for which we are running baseline format: 1A, 1B", type=str)
     args = parser.parse_args()
 
-    subtask = args.subtask
-
-    if subtask == "1A":
-        random_baseline_1A(args.dev_file_path, args.output_file_path, subtask)
-
-    if subtask == "1B":
-        random_baseline_1B(args.techniques_file_path, args.dev_file_path, args.output_file_path, subtask)
+    random_baseline(args.dev_file_path, args.output_file_path)

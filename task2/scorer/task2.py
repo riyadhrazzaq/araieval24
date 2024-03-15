@@ -1,154 +1,133 @@
+import pdb
 import logging
-import logging.handlers
 import argparse
-from sklearn.metrics import f1_score
-import jsonlines
 import os
+import json
 
 import sys
-
 sys.path.append('.')
-from format_checker.task2 import check_format, validate_files
+from format_checker.task2 import check_format
+from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
 
-'''
-The submission of the result file for subtask 2A should be in TSV format. 
-One row of the prediction file is the following:
-id <TAB> label
-
-where id is the tweet id as given in the test file, and label is the predicted binary label, either "disinfo" or "no-disinfo".
-For example:
-
-22	disinfo
-23	no-disinfo
-24	no-disinfo
-
-=====================
-
-The submission of the result file for subtask 2B should be in TSV format. 
-One row of the prediction file is the following:
-id <TAB> label
-
-where id is the tweet id as given in the test file, and label is the predicted class, either "Rumor", "HS", "OFF" or "SPAM". 
-For example:
-
-22	HS
-23	Rumor
-24	OFF
-'''
+"""
+Scoring of Task 1 with the metrics accuracy, and precision, recall, and f1 for positive class.
+"""
 
 logging.basicConfig(format='%(levelname)s : %(message)s', level=logging.INFO)
 
 
-def _read_tsv_input_file(file_full_name):
-    predictions = {}
+MAIN_THRESHOLDS = [1, 3, 5, 10, 20, 50]
 
-    with open(file_full_name, encoding='utf-8') as f:
-        next(f)  # Skip header row
-        for line in f.readlines():
-            cols = line.rstrip().split("\t")
+def _read_gold_and_pred(gold_fpath, pred_fpath):
+    """
+    Read gold and predicted data.
+    :param gold_fpath: the original annotated gold file, where the last 4th column contains the labels.
+    :param pred_fpath: a file with line_number and score at each line.
+    :param subtask: If A, process jsonl gold file, otherwise tsv for subtask B
+    :param lang: If en and task B, read debate sentence, otherwise read tweets
+    :return: {line_number:label} dict; list with (line_number, score) tuples.
+    """
 
-            if len(cols) != 2:
-                logging.error('The file must have two TAB seperated columns')
-                return
+    logging.info("Reading gold labels from file {}".format(gold_fpath))
 
-            predictions[str(cols[0])] = cols[1].split(",")
-
-    return predictions
-
-
-def _read_gold_labels_file(gold_fpath):
     gold_labels = {}
 
-    with jsonlines.open(gold_fpath) as gold_f:
-        for obj in gold_f:
-            gold_labels[str(obj["id"])] = obj["label"]
+    with open(gold_fpath, encoding='utf-8') as f:
+        js_obj = json.load(f)
+        for entry in js_obj:
+            gold_labels[entry['id']] = entry['class_label']
 
-    return gold_labels
+    logging.info('Reading predicted labels from file {}'.format(pred_fpath))
+
+    line_score = []
+    # labels=[]
+    with open(pred_fpath) as pred_f:
+        next(pred_f)
+        for line in pred_f:
+            id, pred_label, run_id  = line.split('\t')
+            id = str(id.strip())
+            pred_label = pred_label.strip()
+
+            if id not in gold_labels:
+                logging.error('No such id: {} in gold file!'.format(id))
+                quit()
+            line_score.append((id, pred_label))
+            # labels.append(pred_label)
 
 
-def _extract_matching_lists(pred_labels, gold_labels):
+    if len(set(gold_labels).difference([tup[0] for tup in line_score])) != 0:
+        logging.error('The predictions do not match the lines from the gold file - missing or extra line_no')
+        raise ValueError('The predictions do not match the lines from the gold file - missing or extra line_no')
+
+    return gold_labels, line_score
+
+
+def evaluate(gold_fpath, pred_fpath):
     """
-  Extract the list of values from the two dictionaries ensuring that elements with the same key are in the same position.
-  """
-    pred_values, gold_values = ([], [])
-
-    for k in gold_labels.keys():
-        pred_values.append(pred_labels[k])
-        gold_values.append(gold_labels[k])
-
-    return pred_values, gold_values
-
-
-def correct_labels(pred_labels, gold_labels):
+    Evaluates the predicted line rankings w.r.t. a gold file.
+    Metrics are: Average Precision, R-Pr, Reciprocal Rank, Precision@N
+    :param gold_fpath: the original annotated gold file, where the last 4th column contains the labels.
+    :param pred_fpath: a file with line_number at each line, where the list is ordered by check-worthiness.
+    :param subtask: either A or B.
+    :param lang: ar, en, or es.
     """
-    Check if the labels in pred file match the gold labels.
-    """
-    if not len(pred_labels.keys()) == len(gold_labels.keys()):
-        logging.error('Number of predictions (%d) is not the expected one (%d).' % (
-            len(pred_labels.keys()), len(gold_labels.keys())))
 
+    #Gold files are differently formatted for 1A and 1B, we need to update this part to serve both
+    # Handles reading separately for jsonl and tsv/csvs now
+    gold_labels_dict, pred_labels_dict = _read_gold_and_pred(gold_fpath, pred_fpath)
+    gold_labels=[]
+    pred_labels=[]
+    for t_id, label in sorted(gold_labels_dict.items()):
+        gold_labels.append(label)
+    for t_id, label in sorted(pred_labels_dict):
+        pred_labels.append(label)
+
+    if len(gold_labels) != len(pred_labels):
+        logging.error("Size of gold labels and predicted labels doesn't match")
+        raise ValueError("Size of gold labels and predicted labels doesn't match")
+
+    # ranked_lines = [t[0] for t in sorted(line_score, key=lambda x: x[1], reverse=True)]
+    # if thresholds is None or len(thresholds) == 0:
+    #     thresholds = MAIN_THRESHOLDS + [len(ranked_lines)]
+
+    # Calculate Metrics
+    # precisions = _compute_precisions(gold_labels, ranked_lines, len(ranked_lines))
+    # precision = _compute_average_precision(gold_labels, pred_labels)
+    # reciprocal_rank = _compute_reciprocal_rank(gold_labels, ranked_lines)
+    # num_relevant = len({k for k, v in gold_labels.items() if v == 1})
+
+    acc = accuracy_score(gold_labels, pred_labels)
+    precision = precision_score(gold_labels, pred_labels, average='weighted')
+    recall = recall_score(gold_labels, pred_labels, average='weighted')
+    f1 = f1_score(gold_labels, pred_labels, average='macro')
+
+    return acc, precision, recall, f1
+
+
+def validate_files(pred_file):
+    if not check_format(pred_file):
+        logging.error('Bad format for pred file {}. Cannot score.'.format(pred_file))
         return False
-
-    if not len(set(pred_labels.keys()).symmetric_difference(set(gold_labels.keys()))) == 0:
-        logging.error('IDs of documents in prediction file don\'t match the gold labels file. Different IDs: ' + str(
-            set(pred_labels.keys()).symmetric_difference(set(gold_labels.keys()))))
-
-        return False
-
     return True
 
 
-def evaluate(pred_labels, gold_labels):
-    """
-        Evaluates the predicted classes w.r.t. a gold file.
-        Metrics are:  macro_f1 nd micro_f1
-        :param pred_labels: a dictionary with predictions,
-        :param gold_labels: a dictionary with gold labels.
-     """
-    pred_values, gold_values = _extract_matching_lists(pred_labels, gold_labels)
-
-    micro_f1 = f1_score(gold_values, pred_values, average="micro")
-    macro_f1 = f1_score(gold_values, pred_values, average="macro")
-
-    return micro_f1, macro_f1
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pred_files_path", "-p", nargs='+', required=True,
-                        help="The absolute path to the files of runs you want to score.", type=str)
-    parser.add_argument("--gold_file_path", "-g", required=True,
-                        help="The absolute path to the gold labels file.", type=str)
-    parser.add_argument("--subtask", "-s", required=True, choices=['2A', '2B'],
-                        help="The subtask for which we are checking format: 2A, 2B", type=str)
-
+    parser.add_argument("--gold-file-path", "-g", required=True, type=str,
+                        help="Path to file with gold annotations.")
+    parser.add_argument("--pred-file-path", "-p", required=True, type=str,
+                        help="Path to file with predict class per data.")
     args = parser.parse_args()
-    pred_files_path = args.pred_files_path
-    gold_file_path = args.gold_file_path
-    subtask = args.subtask
 
-    # Validate if files exist then score
-    if validate_files(pred_files_path):
-        techniques = []
+    pred_file = args.pred_file_path
+    gold_file = args.gold_file_path
 
-        if not os.path.exists(gold_file_path):
-            logging.error("File doesn't exist: {}".format(gold_file_path))
-            exit()
-        else:
-            logging.info("All files exist!")
+    if validate_files(pred_file):
+        logging.info(f"Started evaluating results for task-2...")
+        overall_precisions = [0.0] * len(MAIN_THRESHOLDS)
 
-        gold_labels = _read_gold_labels_file(gold_file_path)
-
-        for pred_file_path in pred_files_path:
-            logging.info("Checking file: {}".format(pred_file_path))
-
-            # Check file format then score
-            if check_format(pred_file_path, subtask):
-                logging.info("Scoring run: {}".format(pred_file_path))
-
-                pred_labels = _read_tsv_input_file(pred_file_path)
-
-                if correct_labels(pred_labels, gold_labels):
-                    micro_f1, macro_f1 = evaluate(pred_labels, gold_labels)
-
-                    logging.info("micro-F1={:.4f}\tmacro-F1={:.4f}".format(micro_f1, macro_f1))
+        acc, precision, recall, f1 = evaluate(gold_file, pred_file)
+        print("acc: {}, P:{}, R:{}, F1:{}".format(acc, precision, recall, f1))
