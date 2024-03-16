@@ -158,27 +158,37 @@ To launch the baseline script run the following:
 > python baselines/subtask_2a.py --train-file-path=<path_to_your_training_file> --dev-file-path=<path_of_your_dev_file><br/>
 
 <!--```python baselines/subtask_2a.py --data-dir=data/ --train-file-path=arabic_memes_propaganda_araieval_24_train.json --dev-file-path=arabic_memes_propaganda_araieval_24_dev.json```-->
-```python baselines/subtask_2a.py --train-file-path data/arabic_memes_propaganda_araieval_24_train.json --dev-file-path data/arabic_memes_propaganda_araieval_24_dev.json```
+```
+python baselines/subtask_2a.py --train-file-path data/arabic_memes_propaganda_araieval_24_train.json --dev-file-path data/arabic_memes_propaganda_araieval_24_dev.json
+```
 
 ### Subtask 2B
 To extract the Image features, run the following script:
 > python baseline/extract_feat.py --data-dir ./data --file-name <path_to_your_training_file> --output-file-name <path_to_image_features_file> 
 <!--```python baseline/extract_feat.py --data-dir ./ --file-name arabic_memes_propaganda_araieval_24_train.json --output-file-name train_feats.json```-->
-```python baselines/extract_feat.py --data-dir data/ --file-name arabic_memes_propaganda_araieval_24_train.json --out-file-name train_feats.json```
+```
+python baselines/extract_feat.py --data-dir data/ --file-name arabic_memes_propaganda_araieval_24_train.json --out-file-name train_feats.json
+```
 
 To launch the baseline script run the following:
 > python baselines/subtask_2b.py --data-dir=<data-directory> --test-split=<split-name> --train-file-name=<name_of_your_training_file> --test-file-name=<name_of_your_test_file_to_be_evaluated><br/>
 <!--```python3 baselines/subtask_2b.py --data-dir=data/ --test-split=dev --train-file-name=arabic_memes_propaganda_araieval_24_train.json --test-file-name=arabic_memes_propaganda_araieval_24_dev.json```-->
-```python baselines/subtask_2b.py --data-dir=data/ --test-split=dev --train-file-name=arabic_memes_propaganda_araieval_24_train.json --test-file-name=arabic_memes_propaganda_araieval_24_dev.json```
+```
+python baselines/subtask_2b.py --data-dir=data/ --test-split=dev --train-file-name=arabic_memes_propaganda_araieval_24_train.json --test-file-name=arabic_memes_propaganda_araieval_24_dev.json
+```
 
 ### Subtask 2C
 To extract the Image and text features, run the following script:
 > python baseline/extract_feat.py --data-dir ./data --file-name arabic_memes_propaganda_araieval_24_train.json --output-file-name train_feats.json
-```python baseline/extract_feat.py --data-dir ./ --file-name arabic_memes_propaganda_araieval_24_train.json --output-file-name train_feats.json```
+```
+python baseline/extract_feat.py --data-dir ./ --file-name arabic_memes_propaganda_araieval_24_train.json --output-file-name train_feats.json
+```
 
 To launch the baseline script run the following:
 > python3 baselines/subtask_2c.py --data-dir=<data-directory> --test-split=<split-name> --train-file-name=<name_of_your_training_file> --test-file-name=<name_of_your_test_file_to_be_evaluated><br/>
-```python baselines/subtask_2c.py --data-dir=data/ --test-split=dev --train-file-name=arabic_memes_propaganda_araieval_24_train.json --test-file-name=arabic_memes_propaganda_araieval_24_dev.json```
+```
+python baselines/subtask_2c.py --data-dir=data/ --test-split=dev --train-file-name=arabic_memes_propaganda_araieval_24_train.json --test-file-name=arabic_memes_propaganda_araieval_24_dev.json
+```
 
 All baselines will be trained on the training dataset and the performance of the model is evaluated on the dev set.
 
