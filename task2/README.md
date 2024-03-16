@@ -70,19 +70,19 @@ All the images are segregated under the folders `arabic_memes_fb_insta_pinterest
 	"img_path": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2019-10-25_17-08-21_UTC.jpg", 
 	"text": "- انا من حقي اقول اني مبحبش الشتا \n= وانا من حقي اهينك", 
 	"class_label": "not_propaganda"
-	},
+},
 {
 	"id": "data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg", 
 	"img_path": "data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg", 
 	"text": "أنا مش هضعف تاني قصادك أنا مش هرجع ابص ورايا..حنفيييي\n خلااااص اديني رجعتلك اديني بين ايديكي", 
 	"class_label": "not_propaganda"
-	},
+},
 { 
 	"id": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2021-04-08_09-56-41_UTC.jpg", 
 	"img_path": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2021-04-08_09-56-41_UTC.jpg", 
 	"text": "-لما الكراش يتجاهلني\n=..\nMe\nده باين عليه بيحبني\nآه شكله بيحبني بس بيتقل", 
 	"class_label": "not_propaganda"
-	}
+}
 ```
 
 ### Output Data Format
@@ -104,11 +104,11 @@ Where: <br>
 * run_id: String identifier used by participants. <br/>
 
 Example:
-> data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2019-10-25_17-08-21_UTC.jpg	not_propaganda  Model_1<br/>
-> data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg	not_propaganda  Model_1<br/>
-> data/arabic_memes_fb_insta_pinterest/Facebook/images/ArabianMemez/339315940_3510069309314547_8940591235150933516_n.jpg	propaganda  Model_1<br/>
-> ... <br/>
-
+```
+data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2019-10-25_17-08-21_UTC.jpg	not_propaganda  Model_1
+data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg	not_propaganda  Model_1
+data/arabic_memes_fb_insta_pinterest/Facebook/images/ArabianMemez/339315940_3510069309314547_8940591235150933516_n.jpg	propaganda  Model_1
+```
 
 ## Scorer and Official Evaluation Metrics
 
