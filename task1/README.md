@@ -1,7 +1,7 @@
 # Task 1: Unimodal (Text) Propagandistic Technique Detection
 
 
-The aim of this task is to identify the propagandistic content from multigenre (tweet and news paragraphs of the news articles) text. Please see the [Task Description](#task-description) below.
+The aim of this task is to identify the propagandistic content from multigenre (tweet and news paragraphs from  news articles) text. Please see the [Task Description](#task-description) below.
 
 Please follow the website https://araieval.gitlab.io/ for any latest information.
 
@@ -50,15 +50,15 @@ Each object has the following format:
 {
   id -> identifier of the example,
   text -> text,
-  label -> list of json object contains techniques and other information,
-  type -> type of text: tweet or news article
+  labels -> list of json object contains techniques and other information,
+  type -> type of text: tweet or news paragraph
 }
 ```
 ##### Example
 ```
     {
         "id": "7365",
-        "text": "قائد الجيش "خطّ أحمر" وواشنطن "راجعة"... LINK",
+        "text": "تحذيرات من حرب جديدة في حال فشل الانتخابات القادمة",
         "labels": [
 			{
 			  "start": 0,
@@ -83,8 +83,7 @@ Each object has the following format:
 ```
 {
   id -> identifier of the example,
-  label -> list of json object contains techniques and other information
-}
+  labels -> list of json objects containing techniques and spans, or [] if no technique is predicted
 ```
 
 ##### Example
@@ -182,7 +181,7 @@ The process consists of two phases:
 For each phase, please adhere to the following guidelines:
 - Each team should create and maintain a single account for submissions. Please ensure all runs are submitted through this account. Submissions from multiple accounts by the same team could result in your system being not ranked in the overview paper.
 - The most recent file submitted to the leaderboard will be considered your final submission.
-- The output file must be named task1_any_suffix.jsonl, where [1] (for example, task1_team_name.jsonl). Failure to follow this naming convention will result in an error on the leaderboard.
+- The output file must be named task1_any_suffix.jsonl (for example, task1_team_name.jsonl). Failure to follow this naming convention will result in an error on the leaderboard.
 - You are required to compress the .jsonl file into a .zip file (for example, zip task1.zip task1.jsonl) and submit it via the Codalab page.
 - Please include your team name and a description of your method with each submission.
 - You are permitted to submit a maximum of 200 submissions per day for each subtask.
