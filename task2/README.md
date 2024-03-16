@@ -1,5 +1,6 @@
 # Task 2: Multimodal Propagandistic Memes Classification
 
+The objective of this task is to categorize memes as either propagandistic or non-propagandistic. For more details, please refer to the [Task Description](#task-description) provided below.
 
 __Table of contents:__
 <!-- - [Evaluation Results](#evaluation-results) -->
