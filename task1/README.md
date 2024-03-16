@@ -1,7 +1,7 @@
 # Task 1: Unimodal (Text) Propagandistic Technique Detection
 
 
-The aim of this task is to identify the propagandistic content from multigenre (tweet and news paragraphs of the news articles) text. This year we offer two two subtasks. Please see the [Task Description](#task-description) below.
+The aim of this task is to identify the propagandistic content from multigenre (tweet and news paragraphs of the news articles) text. Please see the [Task Description](#task-description) below.
 
 Please follow the website https://araieval.gitlab.io/ for any latest information.
 
@@ -177,7 +177,7 @@ python format_checker/task1.py -p task1_random_baseline.jsonl -g data/araieval24
 The process consists of two phases:
 
 1. **System Development Phase:** This phase involves working on the dev set.
-2. **Final Evaluation Phase:** This phase involves working on the test set, which will be released during the evaluation cycle. 
+2. **Final Evaluation Phase (will start on 27 April 2023):** This phase involves working on the test set, which will be released during the evaluation cycle.
 
 For each phase, please adhere to the following guidelines:
 - Each team should create and maintain a single account for submissions. Please ensure all runs are submitted through this account. Submissions from multiple accounts by the same team could result in your system being not ranked in the overview paper.
@@ -188,10 +188,10 @@ For each phase, please adhere to the following guidelines:
 - You are permitted to submit a maximum of 200 submissions per day for each subtask.
 
 ### Submission Site
-Please submit your results on the respective subtask tab: https://codalab.lisn.upsaclay.fr/competitions/18111
+Please submit your results on the respective subtask tab: https://codalab.lisn.upsaclay.fr/competitions/18099
 
 ## Licensing
-The dataset is free for general research use.
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. This allows for sharing and adapting the work, provided that attribution is given, the use is non-commercial, and any derivative works are shared under the same terms. For more information, please visit https://creativecommons.org/licenses/by-nc-sa/4.0/.
 
 ## Credits
 Please find it on the task website: https://araieval.gitlab.io/

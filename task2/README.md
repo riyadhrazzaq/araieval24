@@ -14,7 +14,7 @@ __Table of contents:__
 - [List of Versions](#list-of-versions)
 - [Contents of the Directory](#contents-of-the-directory)
 - [File Format](#file-format)
-    - [Task 2:](#task-2-Multimodal-Propagandistic-Memes-Classification) 
+    - [Task 2:](#task-2-Multimodal-Propagandistic-Memes-Classification)
       - [Input Data Format](#input-data-format)
     - [Output Data Format](#output-data-format)
 - [Format Checkers](#format-checkers)
@@ -32,7 +32,7 @@ Kindly find the leaderboard released in this google sheet, [link](http://shortur
 The process consists of two phases:
 
 1. System Development Phase: This phase involves working on the dev set.
-2. Final Evaluation Phase: This phase involves working on the test set, which will be released during the evaluation cycle. 
+2. Final Evaluation Phase: This phase involves working on the test set, which will be released during the evaluation cycle.
 
 For each phase, please adhere to the following guidelines:
 
@@ -197,7 +197,29 @@ python3 baselines/subtask_2c.py --data-dir=data/ --test-split=dev --train-file-n
 
 All baselines will be trained on the training dataset and the performance of the model is evaluated on the dev set.
 
+## Submission
+
+### Guidelines
+The process consists of two phases:
+
+1. **System Development Phase:** This phase involves working on the dev set.
+2. **Final Evaluation Phase (will start on 27 April 2023):** This phase involves working on the test set, which will be released during the evaluation cycle.
+
+For each phase, please adhere to the following guidelines:
+- Each team should create and maintain a single account for submissions. Please ensure all runs are submitted through this account. Submissions from multiple accounts by the same team could result in your system being not ranked in the overview paper.
+- The most recent file submitted to the leaderboard will be considered your final submission.
+- The output file must be named task1_any_suffix.jsonl, where [1] (for example, task1_team_name.jsonl). Failure to follow this naming convention will result in an error on the leaderboard.
+- You are required to compress the .jsonl file into a .zip file (for example, zip task1.zip task1.jsonl) and submit it via the Codalab page.
+- Please include your team name and a description of your method with each submission.
+- You are permitted to submit a maximum of 200 submissions per day for each subtask.
+
+### Submission Site
+Please submit your results on the respective subtask tab: https://codalab.lisn.upsaclay.fr/competitions/18111
+
+
+## Licensing
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. This allows for sharing and adapting the work, provided that attribution is given, the use is non-commercial, and any derivative works are shared under the same terms. For more information, please visit https://creativecommons.org/licenses/by-nc-sa/4.0/.
+
 
 ## Credits
 Please find it on the task website: https://araieval.gitlab.io/task2/
-
