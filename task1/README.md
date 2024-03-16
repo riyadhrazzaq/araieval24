@@ -188,7 +188,7 @@ For each phase, please adhere to the following guidelines:
 - You are permitted to submit a maximum of 200 submissions per day for each subtask.
 
 ### Submission Site
-Please submit your results on the respective subtask tab: https://codalab.lisn.upsaclay.fr/competitions/18099
+Please submit your results on the respective subtask tab: https://codalab.lisn.upsaclay.fr/competitions/18111
 
 ## Licensing
 This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. This allows for sharing and adapting the work, provided that attribution is given, the use is non-commercial, and any derivative works are shared under the same terms. For more information, please visit https://creativecommons.org/licenses/by-nc-sa/4.0/.
