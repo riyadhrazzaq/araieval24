@@ -57,20 +57,33 @@ All datasets are JSONL files where each line has one JSON object. The text encod
 
 #### Input Data Format
 
-For English, we have two splits train, dev jsonl files. Each file has lines of dictionary objects containing the id, text, labels, and other information. The text encoding is UTF-8. Each dictionary object has the following keys:
-
-id, img_path, text, class_label
+We have two splits train, dev jsonl files. Each file has lines of dictionary objects containing the id, text, labels, and other information. The text encoding is UTF-8. Each dictionary object has the following keys:
+`id`, `img_path`, `text`, `class_label`
 
 
 All the images are segregated under the folders `arabic_memes_fb_insta_pinterest`, `fb_memes`, and `images`.
 
 **Examples:**
-> { "id": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2019-10-25_17-08-21_UTC.jpg", "img_path": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2019-10-25_17-08-21_UTC.jpg", "text": "- انا من حقي اقول اني مبحبش الشتا \n= وانا من حقي اهينك", "class_label": "not_propaganda"}
-> { "id": "data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg", "img_path": "data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg", "text": "أنا مش هضعف تاني قصادك أنا مش هرجع ابص ورايا..حنفيييي\n خلااااص اديني رجعتلك اديني بين ايديكي", "class_label": "not_propaganda"}
-> { "id": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2021-04-08_09-56-41_UTC.jpg", "img_path": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2021-04-08_09-56-41_UTC.jpg", "text": "-لما الكراش يتجاهلني\n=..\nMe\nده باين عليه بيحبني\nآه شكله بيحبني بس بيتقل", "class_label": "not_propaganda"}
->
-> ... <br/>
-
+``` 
+{
+	"id": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2019-10-25_17-08-21_UTC.jpg", 
+	"img_path": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2019-10-25_17-08-21_UTC.jpg", 
+	"text": "- انا من حقي اقول اني مبحبش الشتا \n= وانا من حقي اهينك", 
+	"class_label": "not_propaganda"
+	},
+{
+	"id": "data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg", 
+	"img_path": "data/arabic_memes_fb_insta_pinterest/Pinterest/images/pinterest_images_part2/www.pinterest.com_pin_302163456262798283/add7d8d70902628fb3ae0dff1fb5568b.jpg", 
+	"text": "أنا مش هضعف تاني قصادك أنا مش هرجع ابص ورايا..حنفيييي\n خلااااص اديني رجعتلك اديني بين ايديكي", 
+	"class_label": "not_propaganda"
+	},
+{ 
+	"id": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2021-04-08_09-56-41_UTC.jpg", 
+	"img_path": "data/arabic_memes_fb_insta_pinterest/Instagram/IMAGES/ex.officiall/2021-04-08_09-56-41_UTC.jpg", 
+	"text": "-لما الكراش يتجاهلني\n=..\nMe\nده باين عليه بيحبني\nآه شكله بيحبني بس بيتقل", 
+	"class_label": "not_propaganda"
+	}
+```
 
 ### Output Data Format
 For all subtasks **2A**, **2B**, and **2C** the submission files format is the same.
