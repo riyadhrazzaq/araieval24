@@ -1,5 +1,6 @@
 #
-
+.ipynb_checkpoints/
+venv/
 **/.DS_Store
 __pycache__/
 *.py[cod]
@@ -10,3 +11,5 @@ baseline-output-task2.txt
 task1/task1B-TWT_dev_output.txt
 task2/task2A.txt
 task2/task2B.txt
+task1/data/
+task2/data/
