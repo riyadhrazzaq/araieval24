@@ -13,3 +13,8 @@ task2/task2A.txt
 task2/task2B.txt
 task1/data/
 task2/data/
+task1/checkpoint
+task1/models
+
+.idea/
+task1/src/checkpoint/
