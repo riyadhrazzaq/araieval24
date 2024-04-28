@@ -1,17 +1,56 @@
+import sys
 from collections import defaultdict
+sys.path.append(".")
 
-from ..scorer import task1 as task1scorer
+import task1.scorer.task1 as task1scorer
 
 from config import labels as LABELS
-import torch
-from statistics import mean
 
-from tqdm import tqdm
-from pathlib import Path
-import jsonlines
-from transformers import BertModel, BertTokenizerFast, PreTrainedTokenizerFast, DataCollatorWithPadding
+from transformers import PreTrainedTokenizerFast, DataCollatorWithPadding
 import json
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
+
+
+def format_for_output(objs):
+    labels_per_par = defaultdict(list)
+    for obj in objs:
+        par_id = obj["id"]
+        labels = obj["labels"]
+        labels_per_par[par_id] = task1scorer.process_labels(labels)
+    return labels_per_par
+
+
+def parse_label_encoding(text, encoding, label_encoding, labels):
+    label_encoding = label_encoding > 0
+    span_objs = []
+    word_ids = encoding.word_ids()
+    for i, label in enumerate(labels):
+        flags = label_encoding[i]
+        span_ranges = find_consecutive_trues(flags)
+        for start_idx, end_idx in span_ranges:
+            start_word_id, end_word_id = word_ids[start_idx], word_ids[end_idx]
+
+            if start_word_id is None or end_word_id is None:
+                # skip padding
+                continue
+
+            (start_char_idx, _), (_, end_char_idx) = encoding.word_to_chars(
+                start_word_id
+            ), encoding.word_to_chars(end_word_id)
+
+            span_text = ""
+            if text is not None:
+                span_text = text[start_char_idx: end_char_idx]
+
+            obj = {
+                "technique": label,
+                "start": start_char_idx,
+                "end": end_char_idx,
+                "text": span_text,
+            }
+
+            span_objs.append(obj)
+    return span_objs
 
 
 def parse_text(text, span_objs, tokenizer: PreTrainedTokenizerFast, labels, max_length):
@@ -84,7 +123,7 @@ def parse_sample(sample, tokenizer, labels, max_length):
 
 
 class DatasetFromJson(Dataset):
-    def __init__(self, data_path):
+    def __init__(self, data_path, tokenizer, max_length):
         """
         Args:
           data_path (str): Path to the JSONLines file containing map style data.
@@ -93,9 +132,9 @@ class DatasetFromJson(Dataset):
         self.encodings = []
         self.tensors = []
         self.raw = []
-        self._load_data()
+        self._load_data(tokenizer, max_length)
 
-    def _load_data(self):
+    def _load_data(self, tokenizer, max_length):
         """
         Loads map style data from the JSONLines file.
         """
@@ -105,7 +144,7 @@ class DatasetFromJson(Dataset):
                 if 'labels' not in data:
                     data['labels'] = []
 
-                sample = parse_sample(data)
+                sample = parse_sample(data, tokenizer, LABELS, max_length)
                 self.encodings.append(sample["encoding"])
 
                 del sample["encoding"], sample["id"]
@@ -200,28 +239,3 @@ def parse_label_encoding(text, encoding, label_encoding, labels):
 
             span_objs.append(obj)
     return span_objs
-
-
-def compute_metrics(batch, logits):
-    gold = format_for_output(batch['raws'])
-    hypotheses: List[Dict] = []
-    logits = logits.transpose(1, 2)
-    assert logits.size(1) == len(LABELS), "expects the label in dim=1"
-
-    for i in range(logits.size(0)):
-        hypothesis = parse_label_encoding(None, batch['encodings'][i], logits[i], LABELS)
-        hypotheses.append({
-            "id": batch['raws'][i]['id'],
-            "labels": hypothesis
-        })
-
-    hypotheses_formatted = format_for_output(hypotheses)
-
-    res_for_screen, f1, f1_per_label = task1scorer.FLC_score_to_string(gold, hypotheses_formatted, per_label=True)
-
-    metrics = {
-        'f1': f1,
-        **f1_per_label
-    }
-
-    return metrics

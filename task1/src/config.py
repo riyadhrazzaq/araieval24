@@ -29,3 +29,5 @@ labels = [
 ]
 
 model_name = "bert-base-multilingual-cased"
+checkpoint_dir = "./checkpoints"
+max_epoch = 10

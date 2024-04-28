@@ -18,3 +18,5 @@ task1/models
 
 .idea/
 task1/src/checkpoint/
+sendtoremote.sh
+checkpoints
