@@ -1,16 +1,15 @@
+from typing import Optional, Union, Tuple
+
 import torch
 from torch import nn
-
-from config import labels as LABELS
-from transformers import BertPreTrainedModel, BertModel
-
-from typing import Optional, Union, Tuple
+from transformers import BertPreTrainedModel, BertModel, AutoConfig
 from transformers.modeling_outputs import TokenClassifierOutput
 
-
+from config import labels as LABELS
 
 label2id = {label: idx for idx, label in enumerate(LABELS)}
 id2label = {idx: label for idx, label in enumerate(LABELS)}
+
 
 class CustomBertForTokenClassification(BertPreTrainedModel):
     def __init__(self, config):
@@ -88,7 +87,12 @@ class CustomBertForTokenClassification(BertPreTrainedModel):
         )
 
 
-def model_init(model_name):
-    return CustomBertForTokenClassification.from_pretrained(
-        model_name, id2label=id2label, label2id=label2id
-    )
+def model_init(model_name, pretrain=True):
+    if pretrain:
+        return CustomBertForTokenClassification.from_pretrained(
+            model_name, id2label=id2label, label2id=label2id
+        )
+
+    config = AutoConfig.from_pretrained(
+        model_name, num_labels=len(LABELS), trust_remote_code=False)
+    return CustomBertForTokenClassification(config)

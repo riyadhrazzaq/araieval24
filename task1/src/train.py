@@ -30,6 +30,7 @@ args.add_argument("--model-name", type=str, default=cfg.model_name)
 args.add_argument("--max-step", type=int, default=-1)
 args.add_argument("--max-length", type=int, default=cfg.max_length)
 args.add_argument("--max-epoch", type=str, default=cfg.max_epoch)
+args.add_argument("--no-pretrain", action="store_true")
 
 args = args.parse_args()
 
@@ -47,7 +48,7 @@ def main():
     val_dl = DataLoader(val_ds, batch_size=params['batch_size'],
                         collate_fn=CollateFn(tokenizer=tokenizer, return_raw=True))
 
-    model = model_init(params['model_name'])
+    model = model_init(params['model_name'], not params['no_pretrain'])
     optimizer = torch.optim.Adam(model.parameters(), lr=params['lr'])
     checkpoint_dir = f"{cfg.checkpoint_dir}/{params['experiment_name']}"
     history_dir = f"{checkpoint_dir}/history"

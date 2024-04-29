@@ -10,7 +10,7 @@ import sys
 sys.path.append(".")
 
 from task1.format_checker.task1 import check_format
-
+# from format_checker.task1 import check_format
 
 logging.basicConfig(format="%(levelname)s : %(message)s", level=logging.INFO)
 
