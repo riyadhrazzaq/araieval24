@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 import jsonlines
 from torch.utils.data import DataLoader
@@ -8,8 +9,6 @@ import config as cfg
 from datautil import *
 from modelutil import *
 from trainutil import *
-
-import logging
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,6 +29,8 @@ args = args.parse_args()
 # build param dictionary from args
 params = vars(args)
 params = {k.replace('-', '_'): v for k, v in params.items()}
+params['model_name'] = cfg.model_name
+
 logger.info(f"Params: {params}")
 
 
@@ -54,7 +55,35 @@ def generate(model, tokenizer, text, max_length):
     return hypothesis
 
 
-def evaluate(filepath, model, tokenizer, max_length):
+def evaluate_from_dataloader(dataloader: DataLoader, outfile, model):
+    model.to(device)
+    all_logits = []
+    with torch.no_grad():
+        bar = tqdm(dataloader, leave=False)
+        for step_no, batch in enumerate(bar):
+            for key in batch["tensors"].keys():
+                batch["tensors"][key] = batch["tensors"][key].to(device)
+
+            # calculate loss on valid
+            _, logits = step(model, batch["tensors"])
+
+            logits = logits.transpose(1, 2)
+            assert logits.size(1) == len(LABELS), "expects the label in dim=1"
+            all_logits.append(logits)
+
+    logger.info("🎉 Inference done! Saving predictions...")
+    for batch_num, batch in tqdm(enumerate(dataloader)):
+        logits = all_logits[batch_num]
+        for i in range(logits.size(0)):
+            hypothesis = parse_label_encoding(
+                None, batch["encodings"][i], logits[i], LABELS
+            )
+
+            outfile.write(
+                json.dumps({'id': batch["raws"][i]["id"], 'labels': hypothesis}, ensure_ascii=False) + "\n")
+
+
+def evaluate_from_file(filepath: str, model, tokenizer, max_length):
     """
     takes a filepath and saves output following the shared task's format and metrics if labels are available
     """
@@ -73,12 +102,18 @@ def evaluate(filepath, model, tokenizer, max_length):
 
 def main():
     tokenizer = BertTokenizerFast.from_pretrained(cfg.model_name)
+    val_ds = DatasetFromJson(params['evaluation_file'], tokenizer, cfg.max_length)
+    val_dl = DataLoader(val_ds, batch_size=params['batch_size'],
+                        collate_fn=CollateFn(tokenizer=tokenizer, return_raw=True))
     model = model_init(params['model_name'])
     model, _, _, _ = load_checkpoint(model, params['checkpoint'])
     logger.info("🎉 Model loaded successfully!")
     logger.info("Generating predictions...")
 
-    evaluate(params['evaluation_file'], model, tokenizer, cfg.max_length)
+    outfile = params['evaluation_file'].replace("jsonl", "hyp.jsonl")
+    outfile = open(outfile, 'w', encoding="utf-8")
+    evaluate_from_dataloader(val_dl, outfile, model)
+    outfile.close()
 
 
 if __name__ == '__main__':

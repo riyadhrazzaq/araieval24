@@ -2,15 +2,15 @@ import torch
 from torch import nn
 
 from config import labels as LABELS
-
-label2id = {label: idx for idx, label in enumerate(LABELS)}
-id2label = {idx: label for idx, label in enumerate(LABELS)}
-
 from transformers import BertPreTrainedModel, BertModel
 
 from typing import Optional, Union, Tuple
 from transformers.modeling_outputs import TokenClassifierOutput
 
+
+
+label2id = {label: idx for idx, label in enumerate(LABELS)}
+id2label = {idx: label for idx, label in enumerate(LABELS)}
 
 class CustomBertForTokenClassification(BertPreTrainedModel):
     def __init__(self, config):
@@ -30,17 +30,17 @@ class CustomBertForTokenClassification(BertPreTrainedModel):
         self.post_init()
 
     def forward(
-        self,
-        input_ids: Optional[torch.Tensor] = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        token_type_ids: Optional[torch.Tensor] = None,
-        position_ids: Optional[torch.Tensor] = None,
-        head_mask: Optional[torch.Tensor] = None,
-        inputs_embeds: Optional[torch.Tensor] = None,
-        labels: Optional[torch.Tensor] = None,
-        output_attentions: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
+            self,
+            input_ids: Optional[torch.Tensor] = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            token_type_ids: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.Tensor] = None,
+            head_mask: Optional[torch.Tensor] = None,
+            inputs_embeds: Optional[torch.Tensor] = None,
+            labels: Optional[torch.Tensor] = None,
+            output_attentions: Optional[bool] = None,
+            output_hidden_states: Optional[bool] = None,
+            return_dict: Optional[bool] = None,
     ) -> Union[Tuple[torch.Tensor], TokenClassifierOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
@@ -69,7 +69,10 @@ class CustomBertForTokenClassification(BertPreTrainedModel):
 
         loss = None
         if labels is not None:
-            loss_fct = nn.BCEWithLogitsLoss(reduction="none")
+            num_of_zeros = torch.sum(0 == labels)
+            num_of_pos = labels.view(-1, 23).sum(dim=0)
+            pos_weights = num_of_zeros / num_of_pos
+            loss_fct = nn.BCEWithLogitsLoss(reduction="none", pos_weight=pos_weights)
             loss = loss_fct(logits, labels.transpose(1, 2).float())
             loss = (loss * attention_mask.unsqueeze(dim=2)).mean()
 
