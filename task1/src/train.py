@@ -1,14 +1,6 @@
 import argparse
 
-from torch.utils.data import DataLoader
-from transformers import BertTokenizerFast
-
-import config as cfg
-from datautil import *
-from modelutil import *
 from trainutil import *
-
-import logging
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,36 +16,23 @@ args.add_argument('validation-file', type=str)
 args.add_argument("experiment-name", type=str)
 
 args.add_argument('--batch-size', type=int, default=cfg.batch_size)
-args.add_argument('--epochs', type=int, default=cfg.epochs)
 args.add_argument('--lr', type=float, default=cfg.lr)
 args.add_argument("--model-name", type=str, default=cfg.model_name)
 args.add_argument("--max-step", type=int, default=-1)
 args.add_argument("--max-length", type=int, default=cfg.max_length)
-args.add_argument("--max-epoch", type=str, default=cfg.max_epoch)
+args.add_argument("--max-epoch", type=int, default=cfg.max_epoch)
 args.add_argument("--no-pretrain", action="store_true")
+args.add_argument("--weight-decay", type=str, default=cfg.weight_decay)
 
 args = args.parse_args()
 
 # build param dictionary from args
 params = vars(args)
 params = {k.replace('-', '_'): v for k, v in params.items()}
-logger.info(f"Params: {params}")
 
 
 def main():
-    tokenizer = BertTokenizerFast.from_pretrained(cfg.model_name)
-    train_ds = DatasetFromJson(params['training_file'], tokenizer, cfg.max_length)
-    val_ds = DatasetFromJson(params['validation_file'], tokenizer, cfg.max_length)
-    train_dl = DataLoader(train_ds, batch_size=params['batch_size'], collate_fn=CollateFn(tokenizer, return_raw=False))
-    val_dl = DataLoader(val_ds, batch_size=params['batch_size'],
-                        collate_fn=CollateFn(tokenizer=tokenizer, return_raw=True))
-
-    model = model_init(params['model_name'], not params['no_pretrain'])
-    optimizer = torch.optim.Adam(model.parameters(), lr=params['lr'])
-    checkpoint_dir = f"{cfg.checkpoint_dir}/{params['experiment_name']}"
-    history_dir = f"{checkpoint_dir}/history"
-    history = fit(model, optimizer, train_dl, val_dl, params, checkpoint_dir, max_step=args.max_step, epoch=0)
-    save_history(history, history_dir, save_graph=True)
+    train(params)
 
 
 if __name__ == '__main__':

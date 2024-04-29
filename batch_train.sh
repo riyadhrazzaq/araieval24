@@ -14,5 +14,6 @@ srun --container-image=/enroot/nvcr.io_nvidia_pytorch_23.12-py3.sqsh \
     python task1/src/train.py \
     task1/data/araieval24_task1_train.jsonl \
     task1/data/araieval24_task1_dev.jsonl \
-    exp1
+    --no-pretrain
+    classweight-no-pretrain
 

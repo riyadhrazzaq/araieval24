@@ -2,6 +2,7 @@ max_length = 256
 lr = 0.0001
 epochs = 10
 batch_size = 8
+weight_decay = 0.
 labels = [
     "Appeal_to_Values",
     "Loaded_Language",

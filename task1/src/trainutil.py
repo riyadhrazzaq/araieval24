@@ -1,20 +1,21 @@
-import json
 import logging
 import os
-from collections import defaultdict
 from pathlib import Path
 from statistics import mean
-import sys
-from typing import List, Dict
 
-from datautil import format_for_output, parse_label_encoding
+import optuna
+from torch.utils.data import DataLoader
+from transformers import BertTokenizerFast
+
+import config as cfg
+from datautil import *
+from modelutil import *
 
 sys.path.append(".")
 
 import matplotlib.pyplot as plt
 import torch
 from torch import nn
-from torch.utils.data import Dataset
 from tqdm import tqdm
 from transformers.modeling_outputs import TokenClassifierOutput
 
@@ -108,6 +109,7 @@ def fit(
     checkpoint_dir="./checkpoint",
     max_step=-1,
     epoch=0,
+    trial=None,
 ):
     model.to(device)
     best_f1 = float("-inf")
@@ -157,6 +159,13 @@ def fit(
             best_f1 = validation_metrics["f1"]
             save_checkpoint(model, optimizer, epoch, checkpoint_dir)
             print("🎉 best f1 reached, saved a checkpoint.")
+
+        if trial:
+            trial.report(validation_metrics["f1"], epoch)
+
+            # Handle pruning based on the intermediate value.
+            if trial.should_prune():
+                raise optuna.exceptions.TrialPruned()
 
         log(epoch, history)
 
@@ -228,3 +237,41 @@ def compute_metrics(batch, logits):
     metrics = {"f1": f1, **f1_per_label}
 
     return metrics
+
+
+def train(parameters, trial=None):
+    logger.info(f"Training Parameters: {parameters}")
+
+    tokenizer = BertTokenizerFast.from_pretrained(cfg.model_name)
+    train_ds = DatasetFromJson(parameters["training_file"], tokenizer, cfg.max_length)
+    val_ds = DatasetFromJson(parameters["validation_file"], tokenizer, cfg.max_length)
+    train_dl = DataLoader(
+        train_ds,
+        batch_size=parameters["batch_size"],
+        collate_fn=CollateFn(tokenizer, return_raw=False),
+    )
+    val_dl = DataLoader(
+        val_ds,
+        batch_size=parameters["batch_size"],
+        collate_fn=CollateFn(tokenizer=tokenizer, return_raw=True),
+    )
+
+    model = model_init(parameters["model_name"], not parameters["no_pretrain"])
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=parameters["lr"], weight_decay=parameters["weight_decay"]
+    )
+    checkpoint_dir = f"{cfg.checkpoint_dir}/{parameters['experiment_name']}"
+    history_dir = f"{checkpoint_dir}/history"
+    history = fit(
+        model,
+        optimizer,
+        train_dl,
+        val_dl,
+        parameters,
+        checkpoint_dir,
+        max_step=parameters["max_step"],
+        epoch=0,
+        trial=trial,
+    )
+    save_history(history, history_dir, save_graph=True)
+    return history

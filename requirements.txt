@@ -4,3 +4,4 @@ scipy
 jsonlines
 emoji
 transformers
+optuna
