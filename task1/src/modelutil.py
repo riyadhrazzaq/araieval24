@@ -68,9 +68,13 @@ class CustomBertForTokenClassification(BertPreTrainedModel):
 
         loss = None
         if labels is not None:
+            # weight calculation
             num_of_zeros = torch.sum(0 == labels)
             num_of_pos = labels.view(-1, 23).sum(dim=0)
             pos_weights = num_of_zeros / num_of_pos
+            pos_weights = pos_weights.detach()
+            #
+            # loss calculation
             loss_fct = nn.BCEWithLogitsLoss(reduction="none", pos_weight=pos_weights)
             loss = loss_fct(logits, labels.transpose(1, 2).float())
             loss = (loss * attention_mask.unsqueeze(dim=2)).mean()

@@ -23,13 +23,14 @@ args.add_argument("experiment-name", type=str)
 
 args.add_argument('--num-trials', type=int, default=20)
 args.add_argument('--batch-size', type=int, default=cfg.batch_size)
-args.add_argument('--epochs', type=int, default=cfg.epochs)
 args.add_argument('--lr', type=float, default=cfg.lr)
 args.add_argument("--model-name", type=str, default=cfg.model_name)
 args.add_argument("--max-step", type=int, default=-1)
 args.add_argument("--max-length", type=int, default=cfg.max_length)
 args.add_argument("--max-epoch", type=str, default=cfg.max_epoch)
 args.add_argument("--no-pretrain", action="store_true")
+args.add_argument("--weight-decay", type=str, default=cfg.weight_decay)
+args.add_argument("--warmup-steps", type=int, default=cfg.warmup_steps)
 
 args = args.parse_args()
 
@@ -43,19 +44,21 @@ global root_exp_name
 def objective(trial: optuna.trial.Trial):
     logger.info(f"starting trial {trial.number}")
 
-    lr = trial.suggest_float('lr', 1e-5, 1e-2, log=True)
-    weight_decay = trial.suggest_float('weight_decay', 1e-5, 1e-1, log=True)
-    max_epoch = trial.suggest_int('num_epochs', 1, 10)
-    batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
+    lr = trial.suggest_float('lr', 1e-5, 1e-3, log=True)
+    weight_decay = trial.suggest_float('weight_decay', 1e-5, 1e-2, log=True)
+    # max_epoch = trial.suggest_int('num_epochs', 1, 10)
+    # batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
+    warmup_steps = trial.suggest_int('warmup_steps', 0, 500)
 
     params['lr'] = lr
     params['weight_decay'] = weight_decay
-    params['max_epoch'] = max_epoch
-    params['batch_size'] = batch_size
+    # params['max_epoch'] = max_epoch
+    # params['batch_size'] = batch_size
+    params['warmup_steps'] = warmup_steps
 
     params['experiment_name'] = root_exp_name + "/" + f"trial-{trial.number}"
 
-    history = train(params)
+    history = train(params, trial, disable_tqdm=True)
 
     return history['valid/f1'][-1]
 
@@ -64,7 +67,7 @@ if __name__ == '__main__':
     root_exp_name = params['experiment_name']
 
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=params['num_trials'], timeout=600)
+    study.optimize(objective, n_trials=params['num_trials'])
 
     pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
     complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])

@@ -3,9 +3,10 @@ import os
 from pathlib import Path
 from statistics import mean
 
+import numpy as np
 import optuna
 from torch.utils.data import DataLoader
-from transformers import BertTokenizerFast
+from transformers import BertTokenizerFast, get_scheduler
 
 import config as cfg
 from datautil import *
@@ -47,6 +48,7 @@ def save_checkpoint(model, optimizer, epoch, checkpoint_dir):
 
 
 def validation(model, valid_dl, max_step):
+    print('\tValidating...')
     model.eval()
     loss_across_batches = []
     metric_across_batches = dict(
@@ -63,8 +65,7 @@ def validation(model, valid_dl, max_step):
     )
 
     with torch.no_grad():
-        bar = tqdm(valid_dl, leave=False)
-        for step_no, batch in enumerate(bar):
+        for step_no, batch in enumerate(valid_dl):
             for key in batch["tensors"].keys():
                 batch["tensors"][key] = batch["tensors"][key].to(device)
 
@@ -80,7 +81,8 @@ def validation(model, valid_dl, max_step):
             if step_no == max_step:
                 break
 
-        bar.close()
+            if step_no % cfg.valid_step_interval == 0:
+                print(f"\tStep: {step_no}/{len(valid_dl)}, Loss: {loss.item()}")
 
         # we need the mean
         for k, v in metric_across_batches.items():
@@ -101,16 +103,21 @@ def step(model, batch):
 
 
 def fit(
-    model: nn.Module,
-    optimizer,
-    train_dl: torch.utils.data.DataLoader,
-    valid_dl: torch.utils.data.DataLoader,
-    config: dict,
-    checkpoint_dir="./checkpoint",
-    max_step=-1,
-    epoch=0,
-    trial=None,
+        model: nn.Module,
+        optimizer,
+        train_dl: torch.utils.data.DataLoader,
+        valid_dl: torch.utils.data.DataLoader,
+        config: dict,
+        checkpoint_dir="./checkpoint",
+        max_step=-1,
+        epoch=0,
+        lr_scheduler=None,
+        trial=None,
+        disable_tqdm=False
 ):
+    np.random.seed(cfg.random_seed)
+    torch.manual_seed(cfg.random_seed)
+
     model.to(device)
     best_f1 = float("-inf")
 
@@ -121,9 +128,8 @@ def fit(
     for epoch in range(epoch + 1, epoch + config["max_epoch"] + 1):
         model.train()
         loss_across_batches = []
-        bar = tqdm(train_dl, unit="batch")
 
-        for step_no, batch in enumerate(bar):
+        for step_no, batch in enumerate(train_dl):
             # move to gpu
             for key in batch["tensors"].keys():
                 batch["tensors"][key] = batch["tensors"][key].to(device)
@@ -138,16 +144,18 @@ def fit(
             loss.backward()
 
             optimizer.step()
+            if lr_scheduler:
+                lr_scheduler.step()
 
             loss_across_batches.append(loss.item())
-
-            # show each batch loss in tqdm bar
-            bar.set_postfix(**{"loss": loss.item()})
 
             # skip training on the entire training dataset
             # useful during debugging
             if step_no == max_step:
                 break
+
+            if step_no % cfg.train_step_interval == 0:
+                print(f"\tStep: {step_no}/{len(train_dl)}, Loss: {loss.item()}")
 
         validation_metrics = validation(model, valid_dl, max_step)
 
@@ -158,7 +166,7 @@ def fit(
         if validation_metrics["f1"] > best_f1:
             best_f1 = validation_metrics["f1"]
             save_checkpoint(model, optimizer, epoch, checkpoint_dir)
-            print("🎉 best f1 reached, saved a checkpoint.")
+            print("\n🎉 best f1 reached, saved a checkpoint.")
 
         if trial:
             trial.report(validation_metrics["f1"], epoch)
@@ -174,7 +182,7 @@ def fit(
 
 def log(epoch, history):
     print(
-        f"Epoch: {epoch},\tTrain Loss: {history['train/loss'][-1]},\tVal Loss: {history['valid/loss'][-1]}\tVal F1: {history['valid/f1'][-1]}"
+        f"\nEpoch: {epoch},\tTrain Loss: {history['train/loss'][-1]},\tVal Loss: {history['valid/loss'][-1]}\tVal F1: {history['valid/f1'][-1]}"
     )
 
 
@@ -239,7 +247,7 @@ def compute_metrics(batch, logits):
     return metrics
 
 
-def train(parameters, trial=None):
+def train(parameters, trial=None, disable_tqdm=False):
     logger.info(f"Training Parameters: {parameters}")
 
     tokenizer = BertTokenizerFast.from_pretrained(cfg.model_name)
@@ -257,8 +265,13 @@ def train(parameters, trial=None):
     )
 
     model = model_init(parameters["model_name"], not parameters["no_pretrain"])
-    optimizer = torch.optim.Adam(
+    optimizer = torch.optim.AdamW(
         model.parameters(), lr=parameters["lr"], weight_decay=parameters["weight_decay"]
+    )
+    num_training_steps = parameters['max_epoch'] * len(train_dl)
+    lr_scheduler = get_scheduler(
+        name="linear", optimizer=optimizer, num_warmup_steps=parameters['warmup_steps'],
+        num_training_steps=num_training_steps
     )
     checkpoint_dir = f"{cfg.checkpoint_dir}/{parameters['experiment_name']}"
     history_dir = f"{checkpoint_dir}/history"
@@ -271,7 +284,9 @@ def train(parameters, trial=None):
         checkpoint_dir,
         max_step=parameters["max_step"],
         epoch=0,
+        lr_scheduler=lr_scheduler,
         trial=trial,
+        disable_tqdm=disable_tqdm
     )
     save_history(history, history_dir, save_graph=True)
     return history

@@ -278,7 +278,7 @@ def main(gold_file, pred_file, output_dir=""):
             if format_pass:
                 user_annotations = load_json_as_list(pred_file)
 
-                res_for_output = FLC_score_to_string(
+                res_for_output, f1, all_f1  = FLC_score_to_string(
                     gold_annotations, user_annotations, False
                 )
                 # with open(os.path.join(output_dir, 'scores.txt'), "w") as output_file:
