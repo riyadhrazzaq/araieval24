@@ -2,10 +2,10 @@
 
 set -e
 
-WORK_DIR="checkpoints/classweight-adamw"
-INPUT_FILE="task1/data/task1_train.jsonl"
-CHECKPOINT="$WORK_DIR/model_best.pt"
-OUTPUT_FILE="$WORK_DIR/task1_train.jsonl.hyp"
+WORK_DIR="checkpoints/optuna-reproduce-second"
+INPUT_FILE="task1/data/task1_dev.jsonl"
+CHECKPOINT="$WORK_DIR/model_best"
+OUTPUT_FILE="$WORK_DIR/task1_dev_mela.jsonl"
 
 # generate
 python task1/src/generate.py \

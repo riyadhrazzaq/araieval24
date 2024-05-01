@@ -31,11 +31,11 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 logger.info("Using device: {}".format(device))
 
 
-def save_checkpoint(model, optimizer, epoch, checkpoint_dir):
+def save_checkpoint(model, optimizer, epoch, checkpoint_dir, suffix="model_best.pt"):
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
 
-    path = Path(checkpoint_dir) / "model_best.pt"
+    path = Path(checkpoint_dir) / suffix
 
     torch.save(
         {
@@ -48,7 +48,7 @@ def save_checkpoint(model, optimizer, epoch, checkpoint_dir):
 
 
 def validation(model, valid_dl, max_step):
-    print('\tValidating...')
+    print('Validating...')
     model.eval()
     loss_across_batches = []
     metric_across_batches = dict(
@@ -115,6 +115,7 @@ def fit(
         trial=None,
         disable_tqdm=False
 ):
+    logger.info("checkpoint_dir: {}".format(checkpoint_dir))
     np.random.seed(cfg.random_seed)
     torch.manual_seed(cfg.random_seed)
 
@@ -126,6 +127,7 @@ def fit(
     history = {**_training_history, **_validation_history}
 
     for epoch in range(epoch + 1, epoch + config["max_epoch"] + 1):
+        print("Training...")
         model.train()
         loss_across_batches = []
 
@@ -165,7 +167,7 @@ def fit(
 
         if validation_metrics["f1"] > best_f1:
             best_f1 = validation_metrics["f1"]
-            save_checkpoint(model, optimizer, epoch, checkpoint_dir)
+            save_checkpoint(model, optimizer, epoch, checkpoint_dir, "model_best.pt")
             print("\n🎉 best f1 reached, saved a checkpoint.")
 
         if trial:
@@ -177,6 +179,8 @@ def fit(
 
         log(epoch, history)
 
+    # save last checkpoint
+    save_checkpoint(model, optimizer, epoch, checkpoint_dir, "model_last.pt")
     return history
 
 

@@ -22,7 +22,7 @@ args.add_argument("--max-step", type=int, default=-1)
 args.add_argument("--max-length", type=int, default=cfg.max_length)
 args.add_argument("--max-epoch", type=int, default=cfg.max_epoch)
 args.add_argument("--no-pretrain", action="store_true")
-args.add_argument("--weight-decay", type=str, default=cfg.weight_decay)
+args.add_argument("--weight-decay", type=float, default=cfg.weight_decay)
 args.add_argument("--warmup-steps", type=int, default=cfg.warmup_steps)
 
 args = args.parse_args()

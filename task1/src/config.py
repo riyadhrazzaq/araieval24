@@ -1,11 +1,16 @@
 max_length = 256
-lr = 6.189371832379065e-05  # from optuna
-weight_decay = 0.0012404502272307953  # from optuna
-warmup_steps = 120  # from optuna
+# lr = 6.189371832379065e-05  # from optuna
+# weight_decay = 0.0012404502272307953  # from optuna
+# warmup_steps = 120  # from optuna
+
+lr = 9.350806868882102e-05  # from optuna
+weight_decay = 0.006504135871871216  # from optuna
+warmup_steps = 413  # from optuna
+
 batch_size = 32
 model_name = "bert-base-multilingual-cased"
 checkpoint_dir = "./checkpoints"
-max_epoch = 5
+max_epoch = 10
 random_seed = 111
 
 valid_step_interval = 10

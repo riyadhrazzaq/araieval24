@@ -2,7 +2,7 @@
 #SBATCH --job-name araieval-evaluation
 #SBATCH --partition RTXA6000
 #SBATCH --gpus=1
-#SBATCH --mem=20G
+#SBATCH --mem=30G
 #SBATCH --ntasks=1
 #SBATCH --time=03-00:00:00
 

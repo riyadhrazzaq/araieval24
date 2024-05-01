@@ -77,6 +77,8 @@ def evaluate_from_dataloader(dataloader: DataLoader, outfile, model):
             outfile.write(
                 json.dumps({'id': batch["raws"][i]["id"], 'labels': hypothesis}, ensure_ascii=False) + "\n")
 
+    logger.info("🎉 Saving done!")
+
 
 def evaluate_from_file(filepath: str, model, tokenizer, max_length):
     """
