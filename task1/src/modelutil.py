@@ -61,7 +61,10 @@ class CustomBertForTokenClassification(BertPreTrainedModel):
             return_dict=return_dict,
         )
 
-        sequence_output = outputs[0]
+        # sequence_output = outputs[0]
+
+        # use the middle of the hidden states
+        sequence_output = outputs['hidden_states'][1:][7]
 
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
@@ -94,7 +97,7 @@ class CustomBertForTokenClassification(BertPreTrainedModel):
 def model_init(model_name, pretrain=True):
     if pretrain:
         return CustomBertForTokenClassification.from_pretrained(
-            model_name, id2label=id2label, label2id=label2id
+            model_name, id2label=id2label, label2id=label2id, output_hidden_states=True
         )
 
     config = AutoConfig.from_pretrained(

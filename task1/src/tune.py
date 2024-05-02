@@ -44,7 +44,7 @@ global root_exp_name
 def objective(trial: optuna.trial.Trial):
     logger.info(f"starting trial {trial.number}")
 
-    lr = trial.suggest_float('lr', 1e-5, 1e-3, log=True)
+    lr = trial.suggest_float('lr', 1e-5, 1e-4, log=True)
     weight_decay = trial.suggest_float('weight_decay', 1e-5, 1e-2, log=True)
     # max_epoch = trial.suggest_int('num_epochs', 1, 10)
     # batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     root_exp_name = params['experiment_name']
 
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=params['num_trials'])
+    study.optimize(objective, n_trials=params['num_trials'], timeout=1*60*60)
 
     pruned_trials = study.get_trials(deepcopy=False, states=[TrialState.PRUNED])
     complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])

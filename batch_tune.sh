@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name araieval-tune
+#SBATCH --job-name araieval-tune-state7
 #SBATCH --partition RTXA6000
 #SBATCH --gpus=1
 #SBATCH --mem=30G
@@ -10,12 +10,13 @@
 
 
 srun --container-image=/enroot/nvcr.io_nvidia_pytorch_23.12-py3.sqsh \
+    -u \
     --container-workdir="`pwd`" \
     --container-mounts=/netscratch/$USER:/netscratch/$USER,/ds:/ds:ro,"`pwd`":"`pwd`" \
     --task-prolog="`pwd`/install.sh" \
     python task1/src/tune.py \
     task1/data/task1_train.jsonl \
     task1/data/task1_dev.jsonl \
-    tune-adamw-clswt-seed-again \
-    --num-trials 50
+    tune-hidden-7 \
+    --num-trials 20
 
